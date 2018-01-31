@@ -27,7 +27,9 @@ random arguments to drive more randomness.
 @docs andThen2, andThen3, andThen4, andThen5, andThen6
 -}
 
-import Random.Pcg exposing (Generator, step, list, int, float, bool, map, andThen)
+import Random.Pcg exposing (Generator, andThen, bool, float, initialSeed, int, list, map, step)
+import Task exposing (Task)
+import Time
 
 
 {-| Create a generator that always produces the value provided. This is useful
@@ -352,3 +354,16 @@ andThen6 constructor generatorA generatorB generatorC generatorD generatorE gene
                                     )
                         )
             )
+
+
+{-| Create a Task that will generate random values according to the supplied
+`Generator`.
+
+This does the same thing as `Random.Pcg.generate` except running `Task.perform`
+with a tagger. This allows the task to be chained and combined with other Tasks.
+
+-}
+generateTask : Generator a -> Task x a
+generateTask generator =
+    Time.now
+        |> Task.map (round >> initialSeed >> step generator >> Tuple.first)
